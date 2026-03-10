@@ -22,11 +22,11 @@ import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxMath;
 import backend.Song; 
 import objects.HealthIcon;
-import flixel.addons.ui.FlxInputText;
 import flixel.ui.FlxBar;
 import DateTools;
 import states.PlayState;
 import states.LoadingState;
+import states.AdminPanel;
 
 class MainMenuState extends MusicBeatState
 {
@@ -56,15 +56,8 @@ class MainMenuState extends MusicBeatState
 	var systemStatusText:FlxText;
 	var mouseCursor:FlxSprite;
 	
-	// Oyuncu İsmi Sistemi Değişkenleri
-	var needsPlayerName:Bool = false;
-	var nameInputBox:FlxInputText;
-	var nameInputBG:FlxSprite;
-	var nameInputTitle:FlxText;
-	var nameInputHint:FlxText;
-	var nameInputButton:FlxSprite;
-	var nameInputButtonText:FlxText;
-	var nameInputOverlay:FlxSprite;
+	var allowMouse:Bool = true;
+	
 	var isChangelogOpen:Bool = false;
 	var changelogBG:FlxSprite;
 	var changelogLogo:FlxSprite;
@@ -165,11 +158,11 @@ class MainMenuState extends MusicBeatState
 	
 	var menuIconMap:Map<String, String> = [
 		'hikaye_modu' => "⭐",
-		'serbest_oyun' => "�",
-		'guncelleme' => "�",
+		'serbest_oyun' => "🎵",
+		'guncelleme' => "📋",
 		'modlar' => "🧬",
 		'basarimlar' => "💎",
-		'yapimcilar' => "�️",
+		'yapimcilar' => "🖥️",
 		'ayarlar' => "🛡️"
 	];
 
@@ -201,6 +194,9 @@ class MainMenuState extends MusicBeatState
 		"🔥 Bide Şu Kodları Yaparken Ellerim Yanmasa!"
 	];
 
+	// Sabit oyuncu adı
+	static inline var PLAYER_NAME:String = "Oyuncu";
+
 	override function create()
 	{
 		#if DISCORD_ALLOWED
@@ -208,13 +204,6 @@ class MainMenuState extends MusicBeatState
 		#end
 
 		persistentUpdate = persistentDraw = true;
-
-		// İsim Kontrol
-		if(FlxG.save.data.playerName == null || FlxG.save.data.playerName == "")
-		{
-			// Oyuncu İsmi Girilmediyse İste
-			needsPlayerName = true;
-		}
 
 		// --- ARKA PLAN KATMANLARI ---
 		bgLayer1 = new FlxSprite().makeGraphic(Std.int(FlxG.width * 1.5), Std.int(FlxG.height * 1.5), 0xFF05050a);
@@ -303,16 +292,14 @@ class MainMenuState extends MusicBeatState
 			card.add(glow);
 			cardGlows.push(glow);
 			
-			// Görsel İkonlar
 			var iconName:String = optionShit[i];
 			if(iconName == 'guncelleme') iconName = 'guncelleme_kayitlari';
 			if(iconName == 'basarimlar') iconName = 'basarilar';
 			
-			var icon = new FlxSprite(40, 30); // Merkeze hizalandı (200 - 120) / 2 = 40
+			var icon = new FlxSprite(40, 30);
 			try {
 				icon.loadGraphic(Paths.image('ultra/mainmenu/' + iconName));
 			} catch(e:Dynamic) {
-				// Eğer ikon bulunamazsa boş bir kare oluştur (çökmesin)
 				icon.makeGraphic(100, 100, FlxColor.WHITE);
 			}
 			icon.setGraphicSize(120, 120);
@@ -330,7 +317,7 @@ class MainMenuState extends MusicBeatState
 
 			card.ID = i;
 			card.screenCenter(Y);
-			card.x = FlxG.width + 200; // Ekran dışından başlat
+			card.x = FlxG.width + 200;
 			menuCards.add(card);
 		}
 
@@ -363,10 +350,10 @@ class MainMenuState extends MusicBeatState
 		profileIcon = new HealthIcon('bf');
 		profileIcon.setGraphicSize(50, 50);
 		profileIcon.updateHitbox();
-		profileIcon.setPosition(45, 130); // Pozisyon ayarlandı
+		profileIcon.setPosition(45, 130);
 		add(profileIcon);
 		
-		profileName = new FlxText(105, 135, 150, "" + FlxG.save.data.playerName, 22); // İkonun sağına çekildi
+		profileName = new FlxText(105, 135, 150, PLAYER_NAME, 22);
 		profileName.setFormat(Paths.font("vcr.ttf"), 22, FlxColor.WHITE, LEFT);
 		add(profileName);
 		
@@ -494,11 +481,10 @@ class MainMenuState extends MusicBeatState
 		
 		adminPanel = new AdminPanel();
 		add(adminPanel); 
-		
-		if(needsPlayerName)
-			createNameInputScreen();
-		else
-			FlxG.camera.fade(FlxColor.BLACK, 0.5, true);
+
+		FlxG.camera.fade(FlxColor.BLACK, 0.5, true);
+			
+		addTouchPad('NONE', 'E');
 		
 		super.create();
 	}
@@ -523,13 +509,11 @@ class MainMenuState extends MusicBeatState
 	{
 		isChangelogOpen = true;
 		
-		// Siyah BG
 		changelogBG = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		changelogBG.alpha = 0;
 		changelogBG.scrollFactor.set();
 		add(changelogBG);
 		
-		// 2. PET (assets/shared/images/pet/petlogo.png)
 		changelogLogo = new FlxSprite().loadGraphic(Paths.image('pet/petlogo'));
 		changelogLogo.antialiasing = ClientPrefs.data.antialiasing;
 		changelogLogo.setGraphicSize(Std.int(changelogLogo.width * 0.04)); 
@@ -540,7 +524,6 @@ class MainMenuState extends MusicBeatState
 		changelogLogo.scrollFactor.set();
 		add(changelogLogo);
 		
-		// 3. Sürüm
 		changelogTextTitle = new FlxText(0, changelogLogo.y + changelogLogo.height + 20, FlxG.width, "P.E.T - XQ EDITION V3", 32);
 		changelogTextTitle.setFormat(Paths.font("vcr.ttf"), 32, 0xFF00E5FF, CENTER, FlxTextBorderStyle.OUTLINE, 0xFF000000);
 		changelogTextTitle.screenCenter(X);
@@ -548,7 +531,6 @@ class MainMenuState extends MusicBeatState
 		changelogTextTitle.scrollFactor.set();
 		add(changelogTextTitle);
 
-		// 4. Güncelleme Yazıları
 		var notes = "\n- Arayüz Yenilendi!\n- Profil Sistemi Güncellendi\n- Menü Temaları Eklendi, V1 ve Türkiye. Ayarlar > P.E.T Ayarları'ndan Ayarlanabilir!.\n- 'Mod Desteği Optimize Edildi. Artık Şarkılar Daha Hızlı Yükleniyor.\n- Sürüm, P.E Ultra'nın Temeline Alındı! 0.5\n- Birazcık Bugfix.\n \n- ŞUANKİ SÜRÜM: XQ EDİTİON V3 First-Release\n Durum: Güncel Sürüm\n \nBazı Güncellemeleri Önizleyebilmek için SametGkTe'yi Takipte Kalın!";
 		
 		changelogTextNotes = new FlxText(0, changelogTextTitle.y + 40, FlxG.width - 200, notes, 22);
@@ -558,7 +540,6 @@ class MainMenuState extends MusicBeatState
 		changelogTextNotes.scrollFactor.set();
 		add(changelogTextNotes);
 		
-		// 5. İpucu
 		changelogHint = new FlxText(0, FlxG.height - 40, FlxG.width, "Kapatmak için ESC veya ENTER'a basın", 18);
 		changelogHint.setFormat(Paths.font("vcr.ttf"), 18, 0xFF888888, CENTER);
 		changelogHint.alpha = 0;
@@ -600,160 +581,6 @@ class MainMenuState extends MusicBeatState
 		});
 	}
 	
-	// İsim Sistemi Oluşum
-	function createNameInputScreen()
-	{
-		// Karartma overlay
-		nameInputOverlay = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height, 0xDD000000);
-		nameInputOverlay.alpha = 0;
-		add(nameInputOverlay);
-		
-		FlxTween.tween(nameInputOverlay, {alpha: 1}, 0.5);
-		
-		// Ana İsim
-		nameInputBG = new FlxSprite(0, 0).makeGraphic(600, 400, 0xFF0a0a12);
-		nameInputBG.screenCenter();
-		nameInputBG.y -= 50;
-		nameInputBG.alpha = 0;
-		nameInputBG.scale.set(0.8, 0.8);
-		add(nameInputBG);
-		
-		var borderGlow = new FlxSprite(nameInputBG.x - 5, nameInputBG.y - 5).makeGraphic(610, 410, currentTheme);
-		borderGlow.alpha = 0;
-		add(borderGlow);
-		
-		FlxTween.tween(borderGlow, {alpha: 0.3}, 0.6, {ease: FlxEase.quadOut, startDelay: 0.2});
-		FlxTween.tween(nameInputBG, {alpha: 1, "scale.x": 1, "scale.y": 1}, 0.6, {ease: FlxEase.backOut, startDelay: 0.2});
-		
-		// Başlık
-		nameInputTitle = new FlxText(nameInputBG.x, nameInputBG.y + 40, 600, "HOŞGELDİN. XQ..!", 42);
-		nameInputTitle.setFormat(Paths.font("vcr.ttf"), 42, currentTheme, CENTER, FlxTextBorderStyle.OUTLINE, 0xFF000000);
-		nameInputTitle.borderSize = 3;
-		nameInputTitle.alpha = 0;
-		add(nameInputTitle);
-		
-		FlxTween.tween(nameInputTitle, {alpha: 1, y: nameInputTitle.y + 10}, 0.5, {ease: FlxEase.quadOut, startDelay: 0.4});
-		
-		// Açıklama metni
-		var descText = new FlxText(nameInputBG.x + 50, nameInputBG.y + 110, 500, 
-			"Psych Engine Türkiye'ye hoş geldin!\nLütfen oyuncu ismini gir:", 18);
-		descText.setFormat(Paths.font("vcr.ttf"), 18, 0xFFCCCCCC, CENTER);
-		descText.alpha = 0;
-		add(descText);
-		
-		FlxTween.tween(descText, {alpha: 1}, 0.5, {ease: FlxEase.quadOut, startDelay: 0.5});
-		
-		// Input box background
-		var inputBoxBG = new FlxSprite(nameInputBG.x + 100, nameInputBG.y + 180).makeGraphic(400, 60, 0xFF1a1a25);
-		inputBoxBG.alpha = 0;
-		add(inputBoxBG);
-		
-		var inputBoxBorder = new FlxSprite(nameInputBG.x + 100, nameInputBG.y + 180).makeGraphic(400, 60, currentTheme);
-		inputBoxBorder.alpha = 0;
-		add(inputBoxBorder);
-		
-		FlxTween.tween(inputBoxBG, {alpha: 1}, 0.4, {ease: FlxEase.quadOut, startDelay: 0.6});
-		FlxTween.tween(inputBoxBorder, {alpha: 0.4}, 0.4, {ease: FlxEase.quadOut, startDelay: 0.6});
-		
-		// Input text box
-		nameInputBox = new FlxInputText(nameInputBG.x + 110, nameInputBG.y + 193, 380, "", 28);
-		nameInputBox.setFormat(Paths.font("vcr.ttf"), 28, FlxColor.WHITE, CENTER);
-		nameInputBox.backgroundColor = 0x00000000;
-		nameInputBox.maxLength = 12;
-		nameInputBox.alpha = 0;
-		add(nameInputBox);
-		
-		FlxTween.tween(nameInputBox, {alpha: 1}, 0.4, {ease: FlxEase.quadOut, startDelay: 0.7, onComplete: function(t:FlxTween) {
-			nameInputBox.hasFocus = true;
-		}});
-		
-		// İpucu
-		nameInputHint = new FlxText(nameInputBG.x + 100, nameInputBG.y + 250, 400, 
-			"3-12 karakter arası olmalı", 14);
-		nameInputHint.setFormat(Paths.font("vcr.ttf"), 14, 0xFF888888, CENTER);
-		nameInputHint.alpha = 0;
-		add(nameInputHint);
-		
-		FlxTween.tween(nameInputHint, {alpha: 1}, 0.4, {ease: FlxEase.quadOut, startDelay: 0.8});
-		
-		// Devam butonu glow
-		var buttonGlow = new FlxSprite(nameInputBG.x + 198, nameInputBG.y + 298).makeGraphic(204, 54, currentTheme);
-		buttonGlow.alpha = 0;
-		add(buttonGlow);
-		
-		FlxTween.tween(buttonGlow, {alpha: 0.2}, 0.4, {ease: FlxEase.quadOut, startDelay: 0.9});
-		
-		// Devam butonu
-		nameInputButton = new FlxSprite(nameInputBG.x + 200, nameInputBG.y + 300).makeGraphic(200, 50, currentTheme);
-		nameInputButton.alpha = 0;
-		add(nameInputButton);
-		
-		FlxTween.tween(nameInputButton, {alpha: 1}, 0.4, {ease: FlxEase.quadOut, startDelay: 0.9});
-		
-		nameInputButtonText = new FlxText(nameInputBG.x + 200, nameInputBG.y + 313, 200, "DEVAM ET", 22);
-		nameInputButtonText.setFormat(Paths.font("vcr.ttf"), 22, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, 0xFF000000);
-		nameInputButtonText.borderSize = 2;
-		nameInputButtonText.alpha = 0;
-		add(nameInputButtonText);
-		
-		FlxTween.tween(nameInputButtonText, {alpha: 1}, 0.4, {ease: FlxEase.quadOut, startDelay: 1.0});
-		
-		// Ses efekti
-		FlxG.sound.play(Paths.sound('scrollMenu'), 0.5);
-	}
-	
-	function submitPlayerName()
-	{
-		var name = nameInputBox.text.trim();
-		
-		if(name.length < 3)
-		{
-			// Hata animasyonu
-			FlxG.camera.shake(0.01, 0.2);
-			FlxG.sound.play(Paths.sound('cancelMenu'), 0.7);
-			
-			nameInputHint.text = "İsim çok kısa! (min. 3 karakter)";
-			nameInputHint.color = 0xFFFF5555;
-			
-			FlxTween.cancelTweensOf(nameInputBox);
-			FlxTween.tween(nameInputBox, {x: nameInputBox.x + 10}, 0.05, {
-				ease: FlxEase.quadInOut,
-				onComplete: function(t:FlxTween) {
-					FlxTween.tween(nameInputBox, {x: nameInputBox.x - 20}, 0.05, {
-						ease: FlxEase.quadInOut,
-						onComplete: function(t:FlxTween) {
-							FlxTween.tween(nameInputBox, {x: nameInputBox.x + 10}, 0.05, {ease: FlxEase.quadInOut});
-						}
-					});
-				}
-			});
-			return;
-		}
-		
-		// İsmi kaydet
-		FlxG.save.data.playerName = name;
-		FlxG.save.flush();
-		
-		FlxG.sound.play(Paths.sound('confirmMenu'));
-		
-		// Başarılı
-		nameInputHint.text = "Hoş geldin, " + name + "!";
-		nameInputHint.color = 0xFF10B981;
-		
-		FlxTween.tween(nameInputOverlay, {alpha: 0}, 0.5, {ease: FlxEase.quadIn, startDelay: 0.5});
-		FlxTween.tween(nameInputBG, {alpha: 0, "scale.x": 0.8, "scale.y": 0.8}, 0.5, {ease: FlxEase.backIn, startDelay: 0.5});
-		FlxTween.tween(nameInputTitle, {alpha: 0, y: nameInputTitle.y - 20}, 0.4, {ease: FlxEase.quadIn, startDelay: 0.5});
-		FlxTween.tween(nameInputBox, {alpha: 0}, 0.4, {ease: FlxEase.quadIn, startDelay: 0.5});
-		FlxTween.tween(nameInputButton, {alpha: 0}, 0.4, {ease: FlxEase.quadIn, startDelay: 0.5});
-		FlxTween.tween(nameInputButtonText, {alpha: 0}, 0.4, {ease: FlxEase.quadIn, startDelay: 0.5});
-		FlxTween.tween(nameInputHint, {alpha: 0}, 0.4, {ease: FlxEase.quadIn, startDelay: 0.6, onComplete: function(t:FlxTween) {
-			needsPlayerName = false;
-			profileName.text = name;
-			
-			FlxG.camera.fade(FlxColor.BLACK, 0.5, true);
-		}});
-	}
-	
 	function createParticles()
 	{
 		for(i in 0...40)
@@ -788,7 +615,6 @@ class MainMenuState extends MusicBeatState
 		var totalAccuracy:Float = 0;
 		var fcCount:Int = 0;
 		
-		// Tüm şarkıları tara
 		for(week in WeekData.weeksList)
 		{
 			var weekData = WeekData.weeksLoaded.get(week);
@@ -796,7 +622,7 @@ class MainMenuState extends MusicBeatState
 			
 			for(song in weekData.songs)
 			{
-				for(diff in 0...3) // Easy, Normal, Hard
+				for(diff in 0...3)
 				{
 					var score = Highscore.getScore(song[0], diff);
 					if(score > 0)
@@ -804,11 +630,9 @@ class MainMenuState extends MusicBeatState
 						totalScore += score;
 						songsPlayed++;
 						
-						// Accuracy hesapla (eğer kaydedilmişse)
 						var acc = Highscore.getRating(song[0], diff);
 						if(acc > 0) totalAccuracy += acc;
 						
-						// FC kontrolü
 						if(Highscore.getRating(song[0], diff) >= 100)
 							fcCount++;
 					}
@@ -816,30 +640,26 @@ class MainMenuState extends MusicBeatState
 			}
 		}
 		
-		// Kayıtlı istatistikleri güncelle
 		FlxG.save.data.totalScore = totalScore;
 		FlxG.save.data.songsPlayed = songsPlayed;
 		FlxG.save.data.fcCount = fcCount;
 		FlxG.save.flush();
 		
-		// UI'ı güncelle
 		statsTotalScore.text = formatNumber(totalScore);
 		statsSongsPlayed.text = songsPlayed + " şarkı";
 		
 		var avgAcc = songsPlayed > 0 ? totalAccuracy / songsPlayed : 0;
 		statsAccuracy.text = "%" + FlxMath.roundDecimal(avgAcc, 2);
 		
-		// Renk kodlaması
 		if(avgAcc >= 95)
-			statsAccuracy.color = 0xFF10B981; // Yeşil
+			statsAccuracy.color = 0xFF10B981;
 		else if(avgAcc >= 85)
-			statsAccuracy.color = 0xFFF59E0B; // Sarı
+			statsAccuracy.color = 0xFFF59E0B;
 		else
-			statsAccuracy.color = 0xFFFF5555; // Kırmızı
+			statsAccuracy.color = 0xFFFF5555;
 		
 		statsPerfects.text = "FC: " + fcCount;
 		
-		// Oyun süresi (basit hesaplama: her şarkı ~3 dakika)
 		var totalMinutes = songsPlayed * 3;
 		var hours = Math.floor(totalMinutes / 60);
 		var minutes = totalMinutes % 60;
@@ -856,7 +676,6 @@ class MainMenuState extends MusicBeatState
 		profileXPBar.value = xpProgress;
 		profileXPText.text = Std.int(xpProgress) + "% → Lv." + (level + 1);
 		
-		// Rank sistemi
 		updatePlayerRank(totalScore);
 	}
 	
@@ -896,7 +715,6 @@ class MainMenuState extends MusicBeatState
 	
 	function loadLastPlayed()
 	{
-		// Kayıtlı bir şarkı var mı kontrol et
 		if(FlxG.save.data.lastPlayedSong != null && FlxG.save.data.lastPlayedSong != "")
 		{
 			lastPlayedSong.text = FlxG.save.data.lastPlayedSong;
@@ -910,7 +728,6 @@ class MainMenuState extends MusicBeatState
 				var diffNames = ["EASY", "NORMAL", "HARD"];
 				var diffColors = [0xFF10B981, 0xFFF59E0B, 0xFFFF5555];
 				
-				// Eğer özel bir zorluk seviyesi oynandıysa çökmemesi için güvenlik kontrolü
 				if(diff >= 0 && diff < diffNames.length) {
 					lastPlayedDifficulty.text = diffNames[diff];
 					lastPlayedDifficulty.color = diffColors[diff];
@@ -922,7 +739,6 @@ class MainMenuState extends MusicBeatState
 		}
 		else
 		{
-			// Daha önce oynanmamışsa
 			lastPlayedSong.text = "Henüz oynanmadı";
 			lastPlayedDifficulty.text = "-";
 			lastPlayedScore.text = "Biraz Oyun Vakti!";
@@ -942,30 +758,25 @@ class MainMenuState extends MusicBeatState
 		var difficulty:Int = FlxG.save.data.lastPlayedDifficulty != null ? FlxG.save.data.lastPlayedDifficulty : 1;
 
 		var songPath = Paths.formatToSongPath(songName);
-		
 		var pooped:String = Highscore.formatSong(songPath, difficulty);
 
 		try 
 		{
-			// Şarkı datasını yükle
 			PlayState.SONG = Song.loadFromJson(pooped, songPath);
-			PlayState.isStoryMode = false; // Serbest oyun modundaymış gibi aç
+			PlayState.isStoryMode = false;
 			PlayState.storyDifficulty = difficulty;
 
-			// Oyna butonuna titreme (flicker) efekti ver ve sahneye geç
 			FlxFlicker.flicker(quickPlayButton, 1, 0.06, true, false, function(flick:FlxFlicker)
 			{
 				LoadingState.loadAndSwitchState(new PlayState());
 			});
 
-			// Diğer UI elemanlarını animasyonla ekran dışına at
 			FlxTween.tween(lastPlayedPanel, {x: FlxG.width + 500}, 0.5, {ease: FlxEase.backIn});
 			FlxTween.tween(profilePanel, {x: FlxG.width + 500}, 0.5, {ease: FlxEase.backIn});
 			FlxTween.tween(statsPanel, {x: FlxG.width + 500}, 0.5, {ease: FlxEase.backIn});
 		} 
 		catch(e:Dynamic) 
 		{
-			// Eğer şarkı modu silinmişse veya JSON bulunamazsa çökmesin
 			trace('HATA: Şarkı yüklenemedi! ' + e);
 			selectedSomethin = false;
 			FlxG.sound.play(Paths.sound('cancelMenu'));
@@ -1002,7 +813,6 @@ class MainMenuState extends MusicBeatState
 		var months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
 		dateText.text = days[now.getDay()] + ", " + now.getDate() + " " + months[now.getMonth()];
 		
-		// Karşılama mesajı (isimle birlikte)
 		var greeting = "";
 		if(hour >= 5 && hour < 12)
 			greeting = "Günaydın";
@@ -1013,10 +823,7 @@ class MainMenuState extends MusicBeatState
 		else
 			greeting = "İyi geceler";
 		
-		if(FlxG.save.data.playerName != null)
-			greetingText.text = greeting + ", " + FlxG.save.data.playerName + "!";
-		else
-			greetingText.text = greeting + "!";
+		greetingText.text = greeting + ", " + PLAYER_NAME + "!";
 	}
 
 	override function update(elapsed:Float)
@@ -1057,20 +864,6 @@ class MainMenuState extends MusicBeatState
 		
 		if(Math.floor(ambientPulse) % 30 == 0 && Math.floor(ambientPulse) > 0)
 			updateTimeAndGreeting();
-		
-		if(needsPlayerName)
-		{
-			if(FlxG.keys.justPressed.ENTER) submitPlayerName();
-			
-			if(FlxG.mouse.overlaps(nameInputButton)) {
-				nameInputButton.scale.set(1.05, 1.05);
-				nameInputButtonText.scale.set(1.05, 1.05);
-			} else {
-				nameInputButton.scale.set(1, 1);
-				nameInputButtonText.scale.set(1, 1);
-			}
-			return; 
-		}
 
 		if (isChangelogOpen)
 		{
@@ -1096,7 +889,7 @@ class MainMenuState extends MusicBeatState
 			{
 				selectEntry();
 			}
-			else if (controls.justPressed('debug_1'))
+			else if (controls.justPressed('debug_1') || touchPad.buttonE.justPressed)
 			{
 				selectedSomethin = true;
 				MusicBeatState.switchState(new MasterEditorMenu());
@@ -1138,7 +931,6 @@ class MainMenuState extends MusicBeatState
 			var targetX = centerX - 100 + (card.ID - curSelected) * spacing;
 			var targetY = FlxG.height / 2 - 140;
 			
-			// Seçili kartı biraz öne çıkar ve büyüt
 			if(card.ID == curSelected)
 			{
 				targetY -= 20;
@@ -1242,7 +1034,6 @@ class MainMenuState extends MusicBeatState
 		descriptionText.y = 170;
 		FlxTween.tween(descriptionText, {alpha: 1, y: 160}, 0.3, {ease: FlxEase.quadOut});
 		
-		// Cam follow update
 		camFollow.x = FlxG.width / 2 + (curSelected - (optionShit.length / 2)) * 50;
 	}
 
@@ -1283,7 +1074,6 @@ class MainMenuState extends MusicBeatState
 			}
 		});
 
-		// UI çıkış animasyonları
 		FlxTween.tween(topBar, {y: -100}, 0.5, {ease: FlxEase.backIn});
 		FlxTween.tween(bottomBar, {y: FlxG.height + 100}, 0.5, {ease: FlxEase.backIn});
 		FlxTween.tween(profilePanel, {x: -300}, 0.5, {ease: FlxEase.backIn});
