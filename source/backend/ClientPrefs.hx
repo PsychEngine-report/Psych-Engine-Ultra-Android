@@ -21,6 +21,14 @@ import states.TitleState;
 	public var gameOverVibration:Bool = false;
 	public var fpsRework:Bool = false;
 	
+	//P.E.T variables
+	public var menuTheme:String = 'V2.5';
+	public var petwatermark:Bool = true;
+	public var petloadingscreen:Bool = true;
+	public var petwatermarklogo:String = 'ONLINE';
+	public var petloadingscreenimage:String = 'ONLINE';
+	public var disableIntroVideo:Bool = false;
+	
 	public var downScroll:Bool = false;
 	public var middleScroll:Bool = false;
 	public var opponentStrums:Bool = true;
