@@ -8,7 +8,6 @@ import flixel.effects.FlxFlicker;
 import flixel.util.FlxTimer;
 import objects.VideoSprite;
 import openfl.events.KeyboardEvent;
-import shaders.SimpleWaveShader;
 
 class CodeMenuState extends MusicBeatState
 {
@@ -49,13 +48,6 @@ class CodeMenuState extends MusicBeatState
 		bg.scrollFactor.set();
 		bg.alpha = 0.8;
 		add(bg);
-
-        // Wave shader background
-        warp = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height, 0xFF000000);
-        warp.scrollFactor.set();
-        warp.antialiasing = ClientPrefs.data.antialiasing;
-        add(new SimpleWaveEffect(warp));
-        add(warp);
 
 		// Code entry UI
 		codeBG = new FlxSprite(0, FlxG.height / 2 - 80).makeGraphic(FlxG.width, 160, 0xCC111111);
