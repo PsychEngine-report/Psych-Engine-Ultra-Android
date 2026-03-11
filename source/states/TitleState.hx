@@ -163,6 +163,51 @@ class TitleState extends MusicBeatState
 	var currentVideo:VideoSprite = null;
 	#end
 	
+	public function startVideo(name:String)
+	{
+		#if VIDEOS_ALLOWED
+		trace("========== VIDEO START ==========");
+		trace("Video name: " + name);
+		trace("Video path: " + Paths.video(name));
+		trace("File exists: " + openfl.Assets.exists(Paths.video(name)));
+		trace("inGame: " + inGame);
+		trace("initialized: " + initialized);
+		trace("ClientPrefs.data.disableIntroVideo: " + ClientPrefs.data.disableIntroVideo);
+
+		var videoPath = Paths.video(name);
+		if(videoPath == null || videoPath.length == 0) {
+			trace("ERROR: Video path is null or empty!");
+			startIntro();
+			return;
+		}
+
+		if(!openfl.Assets.exists(videoPath) && !sys.FileSystem.exists(videoPath)) {
+			trace("ERROR: Video file does not exist at path: " + videoPath);
+			startIntro();
+			return;
+		}
+
+		trace("Creating VideoSprite...");
+		currentVideo = new VideoSprite(videoPath, false, true);
+		trace("VideoSprite created: " + currentVideo);
+
+		currentVideo.finishCallback = function() {
+			trace("Video bitti! finishCallback çalıştı.");
+			videoEnd();
+		};
+
+		trace("Adding VideoSprite to scene...");
+		add(currentVideo);
+
+		trace("Playing video...");
+		currentVideo.play();
+		trace("========== VIDEO SETUP COMPLETE ==========");
+		#else
+		trace("VIDEOS_ALLOWED not defined, skipping to startIntro");
+		startIntro();
+		#end
+	}
+	
 	public function videoEnd()
 	{
 		trace("videoEnd() called!");
