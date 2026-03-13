@@ -142,7 +142,13 @@ jobs:
       - name: Setup Haxelib Path
         if: steps.cache-haxelib.outputs.cache-hit == 'true'
         run: haxelib setup ~/haxelib
-
+      - name: Fix hxcpp PCH (macOS)
+        if: inputs.name == 'Android'
+        run: |
+          # hxcpp'nin PCH özelliğini devre dışı bırak
+          echo "-DHXCPP_DISABLE_PCH" >> ~/haxelib/hxcpp/git/build.xml || true
+          # Alternatif: hxcpp config'e ekle
+          echo '{"HXCPP_DISABLE_PCH": "1"}' > ~/.hxcpp_config.json || true
       # ── Android config ──────────────────────────────────────────
       - name: Configure Android
         if: inputs.name == 'Android'
