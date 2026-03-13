@@ -137,11 +137,19 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Fix hxcpp PCH (Android/Ubuntu)
+    - name: Fix hxcpp PCH (Android/Ubuntu)
         if: inputs.name == 'Android'
         run: |
           echo "HXCPP_DISABLE_PCH=1" >> $GITHUB_ENV
           echo "HXCPP_COMPILE_THREADS=4" >> $GITHUB_ENV
+          NDK_ROOT="${{ steps.restore-ndk.outputs.ndk-path }}"
+          BUILTINS=$(find "$NDK_ROOT" -name "libclang_rt.builtins-aarch64-android.a" 2>/dev/null | head -1)
+          echo "Bulunan builtins: $BUILTINS"
+          if [ -n "$BUILTINS" ]; then
+            echo "HXCPP_LINK_FLAGS=$BUILTINS" >> $GITHUB_ENV
+          else
+            echo "UYARI: libclang_rt.builtins bulunamadi"
+          fi
 
       - name: Configure Android
         if: inputs.name == 'Android'
