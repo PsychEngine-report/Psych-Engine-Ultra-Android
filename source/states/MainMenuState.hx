@@ -199,8 +199,10 @@ class MainMenuState extends MusicBeatState
 
 	override function create()
 	{
+		#if mobile
 		final enter:String = (controls.mobileC) ? 'A' : 'ENTER';
 		final back:String = (controls.mobileC) ? 'B' : 'BACK';
+		#end
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence("Ana Menüde - XQ Edition", null);
 		#end
@@ -485,9 +487,10 @@ class MainMenuState extends MusicBeatState
 		add(adminPanel); 
 
 		FlxG.camera.fade(FlxColor.BLACK, 0.5, true);
-			
-		addTouchPad("LEFT_RIGHT", "A_B_E");
 		
+		#if mobile
+		addTouchPad("LEFT_RIGHT", "A_B_E");
+		#end
 		super.create();
 	}
 	

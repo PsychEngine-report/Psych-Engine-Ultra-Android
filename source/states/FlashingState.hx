@@ -89,9 +89,10 @@ class FlashingState extends MusicBeatState
 			btnText.setFormat(Paths.font("vcr.ttf"), 26, FlxColor.WHITE, CENTER);
 			buttonGroup.add(btnText);
 		}
-		
+		#if mobile
 		addTouchPad("LEFT_RIGHT", "A_B");
 		touchPad.alpha = 0;
+		#end
 
 		FlxTween.tween(texts, {alpha: 1.0}, 0.5, {
 			onComplete: (_) -> updateItems()
