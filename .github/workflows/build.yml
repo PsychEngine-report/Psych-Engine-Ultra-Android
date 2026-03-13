@@ -1,5 +1,4 @@
 name: Build
-
 on:
   workflow_call:
     inputs:
@@ -21,11 +20,9 @@ on:
       artifactPath:
         required: true
         type: string
-
 env:
   HAXE_VERSION: 4.3.6
   PROJECT_NAME: PsychEngine
-
 jobs:
   build:
     name: Build
@@ -39,26 +36,76 @@ jobs:
         with:
           haxe-version: ${{ env.HAXE_VERSION }}
 
-      - name: Setup Android NDK
+      # ── Cache 1: Haxelib kütüphaneleri ──────────────────────────
+      # unix.sh değişmediği sürece tekrar indirmez
+      - name: Cache Haxelib
+        id: cache-haxelib
+        uses: actions/cache@v4
+        with:
+          path: ~/haxelib
+          key: haxelib-${{ inputs.name }}-${{ env.HAXE_VERSION }}-${{ hashFiles('setup/unix.sh') }}
+          restore-keys: |
+            haxelib-${{ inputs.name }}-${{ env.HAXE_VERSION }}-
+
+      # ── Cache 2: Lime build cache (.lime klasörü) ────────────────
+      # Kaynak dosyalar değişmediği sürece C++ yeniden derlenmez
+      - name: Cache Lime
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.lime
+            export/release/${{ inputs.name == 'Android' && 'android' || 'ios' }}/haxe
+            export/release/${{ inputs.name == 'Android' && 'android' || 'ios' }}/obj
+          key: lime-${{ inputs.name }}-${{ hashFiles('source/**/*.hx', 'Project.xml') }}
+          restore-keys: |
+            lime-${{ inputs.name }}-
+
+      # ── Cache 3: Android NDK ─────────────────────────────────────
+      - name: Cache Android NDK
         if: inputs.name == 'Android'
+        id: cache-ndk
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.tool_cache }}/ndk/r27c
+          key: ndk-r27c
+
+      - name: Setup Android NDK
+        if: inputs.name == 'Android' && steps.cache-ndk.outputs.cache-hit != 'true'
         id: setup-ndk
         uses: nttld/setup-ndk@main
         with:
           ndk-version: r27c
           add-to-path: false
 
+      - name: Restore NDK Path
+        if: inputs.name == 'Android'
+        id: restore-ndk
+        run: |
+          if [ "${{ steps.cache-ndk.outputs.cache-hit }}" == "true" ]; then
+            echo "ndk-path=${{ runner.tool_cache }}/ndk/r27c" >> $GITHUB_OUTPUT
+          else
+            echo "ndk-path=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install libVLC
         if: contains(inputs.name, 'Linux')
         run: sudo apt install libvlc-dev libvlccore-dev
 
+      # Haxelib cache hit varsa setup'ı atla
       - name: Install Libraries
+        if: steps.cache-haxelib.outputs.cache-hit != 'true'
         run: ${{ inputs.setupCommand }}
+
+      # Cache hit olsa bile haxelib path'ini ayarla
+      - name: Setup Haxelib Path
+        if: steps.cache-haxelib.outputs.cache-hit == 'true'
+        run: haxelib setup ~/haxelib
 
       - name: Configure Android
         if: inputs.name == 'Android'
         run: |
           haxelib run lime config ANDROID_SDK $ANDROID_HOME
-          haxelib run lime config ANDROID_NDK_ROOT ${{ steps.setup-ndk.outputs.ndk-path }}
+          haxelib run lime config ANDROID_NDK_ROOT ${{ steps.restore-ndk.outputs.ndk-path }}
           haxelib run lime config JAVA_HOME $JAVA_HOME_17_arm64
           haxelib run lime config ANDROID_SETUP true
 
