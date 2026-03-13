@@ -105,21 +105,23 @@ jobs:
       - name: Download VLCKit (iOS)
         if: inputs.name == 'iOS' && steps.cache-vlckit.outputs.cache-hit != 'true'
         run: |
-          brew install --quiet libvlc
+          # brew'de 'libvlc' yok, 'vlc' cask'ı var ama framework için
+          # doğrudan MobileVLCKit'i indiriyoruz
           mkdir -p ~/vlc-ios
           cd ~/vlc-ios
-          # MobileVLCKit indir
-          curl -L -o MobileVLCKit.zip \
-            "https://download.videolan.org/cocoapods/unstable/MobileVLCKit-3.6.0.zip" \
-            || curl -L -o MobileVLCKit.zip \
-            "https://github.com/videolan/vlckit/releases/download/3.6.0/MobileVLCKit.zip"
+          # Önce 3.6.0b8'i dene, olmazsa 3.5.1'e düş
+          curl -L --retry 3 -o MobileVLCKit.zip \
+            "https://download.videolan.org/cocoapods/unstable/MobileVLCKit-3.6.0b8.zip" \
+            || curl -L --retry 3 -o MobileVLCKit.zip \
+            "https://download.videolan.org/cocoapods/unstable/MobileVLCKit-3.5.1.zip" \
+            || curl -L --retry 3 -o MobileVLCKit.zip \
+            "https://download.videolan.org/pub/cocoapods/prod/MobileVLCKit-3.3.11a.zip"
           unzip -q MobileVLCKit.zip || true
           ls -la
 
       - name: Configure VLCKit for iOS
         if: inputs.name == 'iOS'
         run: |
-          brew install --quiet libvlc || true
           echo "VLC_IOS_PATH=$HOME/vlc-ios" >> $GITHUB_ENV
           haxelib run lime config VLC_IOS_FRAMEWORK $HOME/vlc-ios || true
 
