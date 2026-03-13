@@ -151,6 +151,29 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Fix hxcpp PCH (Android/Ubuntu)
+        if: inputs.name == 'Android'
+        run: |
+          NDK_ROOT="${{ steps.restore-ndk.outputs.ndk-path }}"
+          SYSROOT="$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+          # hxcpp'ye PCH oluşturmayı devre dışı bırak
+          mkdir -p ~/.hxcpp
+          cat > ~/.hxcpp/config.json << EOF
+          {
+            "HXCPP_COMPILE_THREADS": "4",
+            "HXCPP_DISABLE_PCH": "1"
+          }
+          EOF
+          # Alternatif: hxcpp include path'ine NDK sysroot'unu ekle
+          HXCPP_INCLUDE="${HOME}/haxelib/hxcpp/git/include"
+          if [ -f "$HXCPP_INCLUDE/hxcpp.h" ]; then
+            # NDK'nın c++ header'larını hxcpp'nin yanına symlink et
+            NDK_CXX="$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1"
+            if [ -d "$NDK_CXX" ]; then
+              ln -sfn "$NDK_CXX/typeinfo" "$HXCPP_INCLUDE/typeinfo" 2>/dev/null || true
+            fi
+          fi
+
       - name: Configure Android
         if: inputs.name == 'Android'
         run: |
