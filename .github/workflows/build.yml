@@ -36,8 +36,7 @@ jobs:
         with:
           haxe-version: ${{ env.HAXE_VERSION }}
 
-      # ── Cache 1: Haxelib kütüphaneleri ──────────────────────────
-      # unix.sh değişmediği sürece tekrar indirmez
+      # ── Cache 1: Haxelib ────────────────────────────────────────
       - name: Cache Haxelib
         id: cache-haxelib
         uses: actions/cache@v4
@@ -47,20 +46,21 @@ jobs:
           restore-keys: |
             haxelib-${{ inputs.name }}-${{ env.HAXE_VERSION }}-
 
-      # ── Cache 2: Lime build cache (.lime klasörü) ────────────────
-      # Kaynak dosyalar değişmediği sürece C++ yeniden derlenmez
+      # ── Cache 2: Lime build cache ───────────────────────────────
       - name: Cache Lime
         uses: actions/cache@v4
         with:
           path: |
             ~/.lime
-            export/release/${{ inputs.name == 'Android' && 'android' || 'ios' }}/haxe
-            export/release/${{ inputs.name == 'Android' && 'android' || 'ios' }}/obj
+            export/release/android/haxe
+            export/release/android/obj
+            export/release/ios/haxe
+            export/release/ios/obj
           key: lime-${{ inputs.name }}-${{ hashFiles('source/**/*.hx', 'Project.xml') }}
           restore-keys: |
             lime-${{ inputs.name }}-
 
-      # ── Cache 3: Android NDK ─────────────────────────────────────
+      # ── Cache 3: Android NDK ────────────────────────────────────
       - name: Cache Android NDK
         if: inputs.name == 'Android'
         id: cache-ndk
@@ -87,20 +87,61 @@ jobs:
             echo "ndk-path=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Install libVLC
+      # ── libVLC: Linux ───────────────────────────────────────────
+      - name: Install libVLC (Linux)
         if: contains(inputs.name, 'Linux')
         run: sudo apt install libvlc-dev libvlccore-dev
 
-      # Haxelib cache hit varsa setup'ı atla
+      # ── libVLC: iOS — VLCKit xcframework ───────────────────────
+      # hxvlc iOS derlemesi için VLCKit framework gerekli
+      - name: Cache VLCKit (iOS)
+        if: inputs.name == 'iOS'
+        id: cache-vlckit
+        uses: actions/cache@v4
+        with:
+          path: ~/vlc-ios
+          key: vlckit-3.6.0
+
+      - name: Download VLCKit (iOS)
+        if: inputs.name == 'iOS' && steps.cache-vlckit.outputs.cache-hit != 'true'
+        run: |
+          brew install --quiet libvlc
+          mkdir -p ~/vlc-ios
+          cd ~/vlc-ios
+          # MobileVLCKit indir
+          curl -L -o MobileVLCKit.zip \
+            "https://download.videolan.org/cocoapods/unstable/MobileVLCKit-3.6.0.zip" \
+            || curl -L -o MobileVLCKit.zip \
+            "https://github.com/videolan/vlckit/releases/download/3.6.0/MobileVLCKit.zip"
+          unzip -q MobileVLCKit.zip || true
+          ls -la
+
+      - name: Configure VLCKit for iOS
+        if: inputs.name == 'iOS'
+        run: |
+          brew install --quiet libvlc || true
+          echo "VLC_IOS_PATH=$HOME/vlc-ios" >> $GITHUB_ENV
+          haxelib run lime config VLC_IOS_FRAMEWORK $HOME/vlc-ios || true
+
+      # ── libVLC: Android ─────────────────────────────────────────
+      # hxvlc Android için libVLC .so dosyalarını NDK üzerinden alır,
+      # brew'e gerek yok — hxvlc kendi içinde bundle ediyor
+      - name: Verify hxvlc Android Support
+        if: inputs.name == 'Android'
+        run: |
+          echo "hxvlc Android: NDK üzerinden native build yapılacak"
+          haxelib list | grep hxvlc || echo "hxvlc henüz kurulmadı, setup'ta kurulacak"
+
+      # ── Haxelib kurulum ─────────────────────────────────────────
       - name: Install Libraries
         if: steps.cache-haxelib.outputs.cache-hit != 'true'
         run: ${{ inputs.setupCommand }}
 
-      # Cache hit olsa bile haxelib path'ini ayarla
       - name: Setup Haxelib Path
         if: steps.cache-haxelib.outputs.cache-hit == 'true'
         run: haxelib setup ~/haxelib
 
+      # ── Android config ──────────────────────────────────────────
       - name: Configure Android
         if: inputs.name == 'Android'
         run: |
@@ -109,9 +150,11 @@ jobs:
           haxelib run lime config JAVA_HOME $JAVA_HOME_17_arm64
           haxelib run lime config ANDROID_SETUP true
 
+      # ── Derleme ─────────────────────────────────────────────────
       - name: Compile
         run: haxelib run lime build ${{ inputs.buildArgs }}
 
+      # ── iOS IPA ─────────────────────────────────────────────────
       - name: Make IPA
         if: inputs.name == 'iOS'
         run: |

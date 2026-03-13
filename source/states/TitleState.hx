@@ -123,7 +123,7 @@ class TitleState extends MusicBeatState
 			MusicBeatState.switchState(new FlashingState());
 		}
 		else
-			startIntro();
+			startCutscenesIn();
 		#end
 	}
 
@@ -212,11 +212,13 @@ class TitleState extends MusicBeatState
 	{
 		trace("videoEnd() called!");
 
+		#if VIDEOS_ALLOWED
 		if(currentVideo != null) {
 			currentVideo.finishCallback = null;
 			currentVideo.destroy();
 			currentVideo = null;
 		}
+		#end
 
 		startCutscenesOut();
 	}
