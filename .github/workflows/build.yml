@@ -150,11 +150,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Fix hxcpp PCH (Android/Ubuntu)
+      -  name: Fix hxcpp PCH (Android/Ubuntu)
         if: inputs.name == 'Android'
         run: |
-          echo "HXCPP_DISABLE_PCH=1" >> $GITHUB_ENV
-          echo "HXCPP_COMPILE_THREADS=4" >> $GITHUB_ENV"
+            echo "HXCPP_DISABLE_PCH=1" >> $GITHUB_ENV
+            echo "HXCPP_COMPILE_THREADS=4" >> $GITHUB_ENV
 
           NDK_SYSROOT="$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
           NDK_INCLUDE="$NDK_SYSROOT/usr/include"
