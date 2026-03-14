@@ -105,7 +105,7 @@ jobs:
       - name: Download VLCKit (iOS)
         if: inputs.name == 'iOS' && steps.cache-vlckit.outputs.cache-hit != 'true'
         run: |
-          brew install --quiet libvlc
+          brew install --quiet liblc3
           mkdir -p ~/vlc-ios
           cd ~/vlc-ios
           # MobileVLCKit indir
