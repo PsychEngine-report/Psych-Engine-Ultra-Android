@@ -89,10 +89,21 @@ class FlashingState extends MusicBeatState
 			btnText.setFormat(Paths.font("vcr.ttf"), 26, FlxColor.WHITE, CENTER);
 			buttonGroup.add(btnText);
 		}
+		
 		#if mobile
-		addTouchPad("LEFT_RIGHT", "A_B");
-		touchPad.alpha = 0;
-		#end
+        try {
+            addTouchPad("LEFT_RIGHT", "A_B_E"); 
+        } catch(e:Dynamic) {
+            // Eğer hata verirse en güvenli modu dene
+            addTouchPad("LEFT_FULL", "A_B_C");
+        }
+
+        // touchPad null değilse işlem yap (Çökme koruması)
+        if (touchPad != null) {
+            touchPad.alpha = 0;
+            FlxTween.tween(touchPad, {alpha: 1.0}, 0.5);
+        }
+        #end
 
 		FlxTween.tween(texts, {alpha: 1.0}, 0.5, {
 			onComplete: (_) -> updateItems()

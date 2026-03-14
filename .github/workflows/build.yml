@@ -32,12 +32,28 @@ jobs:
     runs-on: ${{ inputs.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Setup Haxe
         uses: krdlab/setup-haxe@master
         with:
           haxe-version: ${{ env.HAXE_VERSION }}
+
+      # Haxelib bağımlılıklarını cache'le
+      - name: Cache Haxelib Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/haxelib
+            ~/.haxelib
+            ~/AppData/Roaming/haxelib
+            .haxelib
+          key: ${{ runner.os }}-haxelib-${{ hashFiles('**/Project.xml', '**/project.xml') }}-${{ env.HAXE_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-haxelib-${{ hashFiles('**/Project.xml', '**/project.xml') }}-
+            ${{ runner.os }}-haxelib-
 
       - name: Setup Android NDK
         if: inputs.name == 'Android'
@@ -46,6 +62,50 @@ jobs:
         with:
           ndk-version: r27c
           add-to-path: false
+
+      # Android için Gradle ve build cache
+      - name: Cache Android Build
+        if: inputs.name == 'Android'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.android/build-cache
+            export/release/android/.gradle
+            export/release/android/bin/app/.gradle
+            export/release/android/bin/app/build
+          key: ${{ runner.os }}-android-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'Project.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-android-${{ hashFiles('Project.xml') }}-
+            ${{ runner.os }}-android-
+
+      # iOS için build cache
+      - name: Cache iOS Build
+        if: inputs.name == 'iOS'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            ~/Library/Developer/Xcode/DerivedData
+            export/release/ios/build
+            export/release/ios/obj
+          key: ${{ runner.os }}-ios-${{ hashFiles('Project.xml') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-ios-${{ hashFiles('Project.xml') }}-
+            ${{ runner.os }}-ios-
+
+      # Lime/OpenFL export cache (tüm platformlar için)
+      - name: Cache Lime Export
+        uses: actions/cache@v4
+        with:
+          path: |
+            export/.build
+            .lime
+          key: ${{ runner.os }}-lime-${{ inputs.name }}-${{ hashFiles('Project.xml') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-lime-${{ inputs.name }}-${{ hashFiles('Project.xml') }}-
+            ${{ runner.os }}-lime-${{ inputs.name }}-
 
       - name: Install libVLC
         if: contains(inputs.name, 'Linux')
@@ -77,8 +137,10 @@ jobs:
           zip -r ${{ env.PROJECT_NAME }}.ipa Payload
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@main
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifactName }}
           path: ${{ inputs.artifactPath }}
           if-no-files-found: error
+          compression-level: 6  # 0-9 arası, varsayılan 6
+          retention-days: 14    # 14 gün sakla
