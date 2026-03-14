@@ -56,6 +56,13 @@ class LanguageSubState extends MusicBeatSubstate
         buildUI();
         updateList();
         updatePreview(false);
+		
+		try {
+			addTouchPad('LEFT_FULL', 'A_B');
+		} catch(e:Dynamic) {
+			trace("Hata: LEFT_FULL yuklenemedi, varsayilan moda geciliyor.");
+			addTouchPad('LEFT_RIGHT', 'A_B_E'); 
+		}
     }
 
     // ── UI İnşa ─────────────────────────────────────────────────

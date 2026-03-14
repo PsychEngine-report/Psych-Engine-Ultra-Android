@@ -7,6 +7,7 @@ import flixel.util.FlxGradient;
 import flixel.group.FlxSpriteGroup;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
+import flixel.util.FlxTimer;
 
 class FlashingState extends MusicBeatState
 {
@@ -28,17 +29,14 @@ class FlashingState extends MusicBeatState
 		final enter:String = (controls.mobileC) ? 'A' : 'ENTER';
 		final back:String = (controls.mobileC) ? 'B' : 'BACK';
 		
-		// Ensure music is not playing during this state
 		if(FlxG.sound.music != null && FlxG.sound.music.playing)
 		{
 			FlxG.sound.music.stop();
 		}
 
-		// Gradient arka plan
 		bg = FlxGradient.createGradientFlxSprite(FlxG.width, FlxG.height, [0xFF232946, 0xFF393D73, 0xFF232946], 1, 90);
 		add(bg);
 
-		// Ortalanmış yarı saydam panel (yuvarlatılmış köşe)
 		panel = new FlxSprite((FlxG.width-700)/2, (FlxG.height-350)/2);
 		panel.makeGraphic(700, 350, FlxColor.TRANSPARENT);
 		drawRoundRect(panel, 0, 0, 700, 350, 32, FlxColor.fromRGB(30,30,40, 220));
@@ -46,17 +44,14 @@ class FlashingState extends MusicBeatState
 		FlxTween.tween(panel, {alpha: 1}, 0.7, {ease: FlxEase.cubeOut});
 		add(panel);
 
-		// Uyarı simgesi: assets/shared/images/ultra/alert.png
 		icon = new FlxSprite(panel.x+40, panel.y+40);
 		icon.loadGraphic(Paths.image("ultra/alert"));
 		icon.setGraphicSize(100, 100);
 		icon.updateHitbox();
 		icon.alpha = 0.8;
-		// Hareket animasyonu kaldırıldı, ikon sabit duracak
 		FlxTween.tween(icon, {alpha: 0.2}, 0.5, {type: FlxTween.PINGPONG, ease: FlxEase.sineInOut});
 		add(icon);
 
-		// Uyarı metni
 		texts = new FlxTypedSpriteGroup<FlxText>();
 		texts.alpha = 0.0;
 		add(texts);
@@ -67,7 +62,6 @@ class FlashingState extends MusicBeatState
 		warnText.alignment = CENTER;
 		texts.add(warnText);
 
-		// Butonlar için grup
 		buttonGroup = new FlxSpriteGroup();
 		add(buttonGroup);
 
@@ -89,41 +83,29 @@ class FlashingState extends MusicBeatState
 			btnText.setFormat(Paths.font("vcr.ttf"), 26, FlxColor.WHITE, CENTER);
 			buttonGroup.add(btnText);
 		}
-		
-		#if mobile
-        try {
-            addTouchPad("LEFT_RIGHT", "A_B_E"); 
-        } catch(e:Dynamic) {
-            // Eğer hata verirse en güvenli modu dene
-            addTouchPad("LEFT_FULL", "A_B_C");
-        }
 
-        // touchPad null değilse işlem yap (Çökme koruması)
-        if (touchPad != null) {
-            touchPad.alpha = 0;
-            FlxTween.tween(touchPad, {alpha: 1.0}, 0.5);
-        }
-        #end
+		// Orijinal kodda olduğu gibi #if mobile etiketi olmadan ekliyoruz
+		addTouchPad("LEFT_RIGHT", "A_B");
+		if (touchPad != null) touchPad.alpha = 0;
 
 		FlxTween.tween(texts, {alpha: 1.0}, 0.5, {
 			onComplete: (_) -> updateItems()
 		});
-		FlxTween.tween(touchPad, {alpha: 1.0}, 0.5);
+		
+		if (touchPad != null) FlxTween.tween(touchPad, {alpha: 1.0}, 0.5);
 	}
 
 	override function update(elapsed:Float)
 	{
-		// CRITICAL: Update controls FIRST before using them
-		super.update(elapsed);
-		
+		// Orijinal kodun update mantığını birebir uyguluyoruz
 		if(leftState) {
+			super.update(elapsed);
 			return;
 		}
 		
 		var back:Bool = controls.BACK;
 		var changed:Bool = false;
 		
-		// Butonlar arasında gezinme
 		if (controls.UI_LEFT_P) {
 			if (!isYes) {
 				isYes = true;
@@ -146,31 +128,29 @@ class FlashingState extends MusicBeatState
 			acceptSelection(back);
 		}
 		
-		// Buton hover animasyonu
 		for (i in 0...buttonSprites.length) {
 			var btn = buttonSprites[i];
 			var sel = (i == 0 && isYes) || (i == 1 && !isYes);
 			btn.alpha = sel ? 1.0 : 0.7;
 			btn.color = sel ? FlxColor.fromRGB(255, 200, 60) : FlxColor.fromRGB(60,60,90);
 		}
+		
+		super.update(elapsed);
 	}
 
 	function acceptSelection(isBack:Bool = false)
 	{
-		if(leftState) return;
-		
 		leftState = true;
 		FlxTransitionableState.skipNextTransIn = true;
 		FlxTransitionableState.skipNextTransOut = true;
 		
 		var fadeTime = 0.5;
 		var fadeToBlack = function() {
-			// Arka planı siyaha tweenle
 			FlxTween.color(bg, fadeTime, bg.color, FlxColor.BLACK);
-			// Diğer tüm objeleri kaybolmaya tweenle
 			FlxTween.tween(panel, {alpha: 0}, fadeTime);
 			FlxTween.tween(icon, {alpha: 0}, fadeTime);
 			FlxTween.tween(buttonGroup, {alpha: 0}, fadeTime);
+			if (touchPad != null) FlxTween.tween(touchPad, {alpha: 0}, fadeTime);
 			FlxTween.tween(texts, {alpha: 0}, fadeTime, {
 				onComplete: (_) -> MusicBeatState.switchState(new MainMenuState())
 			});
@@ -192,24 +172,7 @@ class FlashingState extends MusicBeatState
 		}
 	}
 
-	function changeButton(direction:Int)
-	{
-		if(leftState) return;
-		
-		if(direction > 0) {
-			// Sağa git
-			if (isYes) isYes = false;
-		} else if(direction < 0) {
-			// Sola git
-			if (!isYes) isYes = true;
-		}
-		
-		FlxG.sound.play(Paths.sound("scrollMenu"), 0.7);
-		updateItems();
-	}
-
 	function updateItems() {
-		// Buton metinlerinin alpha ve renklerini güncelle
 		for (i in 0...buttonGroup.length) {
 			var obj = buttonGroup.members[i];
 			if (Std.isOfType(obj, FlxText)) {
@@ -221,7 +184,6 @@ class FlashingState extends MusicBeatState
 		}
 	}
 
-	// Yuvarlatılmış dikdörtgen çizimi (FlxSprite'a)
 	function drawRoundRect(sprite:FlxSprite, x:Float, y:Float, w:Float, h:Float, radius:Float, color:Int) {
 		#if (openfl && !flash)
 		var gfx = new openfl.display.Shape();

@@ -488,9 +488,7 @@ class MainMenuState extends MusicBeatState
 
 		FlxG.camera.fade(FlxColor.BLACK, 0.5, true);
 		
-		#if mobile
 		addTouchPad("LEFT_RIGHT", "A_B_E");
-		#end
 		super.create();
 	}
 	
