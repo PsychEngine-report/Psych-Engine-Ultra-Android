@@ -50,9 +50,7 @@ class FreeplayState extends MusicBeatState
     var curDifficulty:Int = -1;
     private static var lastDifficultyName:String = Difficulty.getDefault();
 
-    // ═══════════════════════════════════════════════════════════════
     // ARKA PLAN SİSTEMİ
-    // ═══════════════════════════════════════════════════════════════
     var bg:FlxSprite;
     var bgOverlay:FlxSprite;
     var songBG:FlxSprite;
@@ -67,9 +65,7 @@ class FreeplayState extends MusicBeatState
     var breathingEffect:Float = 0;
     var customSongBGs:Map<String, String> = new Map();
 
-    // ═══════════════════════════════════════════════════════════════
-    // NAVBAR (ÜST)
-    // ═══════════════════════════════════════════════════════════════
+    // ÜSTBAR
     var topBar:FlxSprite;
     var topBarLine:FlxSprite;
     var topBarGlow:FlxSprite;
@@ -79,9 +75,7 @@ class FreeplayState extends MusicBeatState
     var songCountText:FlxText;
     var songCountBadge:FlxSprite;
 
-    // ═══════════════════════════════════════════════════════════════
-    // TAB BAR (Kategori seçimi - pill shaped)
-    // ═══════════════════════════════════════════════════════════════
+	// TAB BAR
     var tabBar:FlxSprite;
     var tabButtons:Array<FlxSprite> = [];
     var tabTexts:Array<FlxText> = [];
@@ -95,21 +89,19 @@ class FreeplayState extends MusicBeatState
 	var beatBPM:Float = 100;
 	var iconBeatScale:Float = 1.0;
 
-    // ═══════════════════════════════════════════════════════════════
-    // SOL SHOWCASE PANEL (Seçili şarkı bilgisi)
-    // ═══════════════════════════════════════════════════════════════
+	// SOL PANEL
     var showcasePanel:FlxSprite;
     var showcasePanelGlow:FlxSprite;
     var showcaseBorder:FlxSprite;
     var showcaseWidth:Int = 340;
 
-    // Showcase icon
+    // ikon
     var showcaseIconBG:FlxSprite;
     var showcaseIconGlow:FlxSprite;
     var showcaseIcon:FlxSprite;
     var showcaseIconFrame:FlxSprite;
 
-    // Showcase bilgileri
+    // Bilgiler
     var showcaseTitle:FlxText;
     var showcaseSubtitle:FlxText;
     var showcaseWeekText:FlxText;
@@ -139,20 +131,16 @@ class FreeplayState extends MusicBeatState
     var completionText:FlxText;
     var completionBar:FlxBar;
 
-    // ═══════════════════════════════════════════════════════════════
-    // MERKEZ - ŞARKI LİSTESİ
-    // ═══════════════════════════════════════════════════════════════
+	// Şarkı Listesi
     private var grpSongs:FlxTypedGroup<Alphabet>;
     private var curPlaying:Bool = false;
     private var iconArray:Array<HealthIcon> = [];
 
-    // Random song
+    // Random Şarkı
     var randomText:Alphabet;
     var randomIcon:HealthIcon;
 
-    // ═══════════════════════════════════════════════════════════════
-    // ARAMA SİSTEMİ (Spotlight style)
-    // ═══════════════════════════════════════════════════════════════
+	// ARAMA SİSTEMİ
     var searchOverlay:FlxSprite;
     var searchPanel:FlxSprite;
     var searchPanelBorder:FlxSprite;
@@ -169,17 +157,13 @@ class FreeplayState extends MusicBeatState
     var searchInputText:FlxText;
     var searchInputBG:FlxSprite;
 
-    // ═══════════════════════════════════════════════════════════════
-    // ALT BAR
-    // ═══════════════════════════════════════════════════════════════
+	// ALT BAR
     var bottomBG:FlxSprite;
     var bottomBarLine:FlxSprite;
     public var bottomText:FlxText;
     public var bottomString:String;
 
-    // ═══════════════════════════════════════════════════════════════
-    // SEÇİM MENÜSÜ (Enter sonrası)
-    // ═══════════════════════════════════════════════════════════════
+	// SEÇİM MENÜSÜ
     var selected:Bool = false;
     var selectedItem:Int = 0;
     var menuBG:FlxSprite;
@@ -199,28 +183,20 @@ class FreeplayState extends MusicBeatState
     var menuSelectionGlow:FlxSprite;
     var menuSelectionBar:FlxSprite;
 
-    // ═══════════════════════════════════════════════════════════════
-    // MÜZİK PLAYER & VİSUALİZER
-    // ═══════════════════════════════════════════════════════════════
+	// MÜZİK PLAYER
     var player:MusicPlayer;
 
-    // ═══════════════════════════════════════════════════════════════
-    // MISSING TEXT
-    // ═══════════════════════════════════════════════════════════════
+	// YOK
     var missingTextBG:FlxSprite;
     var missingText:FlxText;
     var missesText:FlxText;
 
-    // ═══════════════════════════════════════════════════════════════
-    // KATEGORİ & FAVORİ VERİLERİ
-    // ═══════════════════════════════════════════════════════════════
+	// KATEGORİ VERİSİ
     var favorites:Array<String> = [];
     var hiddenSongs:Array<String> = [];
     var recentPlays:Array<String> = [];
 
-    // ═══════════════════════════════════════════════════════════════
-    // ANİMASYON DEĞİŞKENLERİ
-    // ═══════════════════════════════════════════════════════════════
+	// ANİMASYON
     var pulseTimer:Float = 0;
     public var scoreBG:FlxSprite;
     public var holdTime:Float = 0;

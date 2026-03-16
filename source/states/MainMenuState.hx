@@ -44,7 +44,7 @@ class MainMenuState extends MusicBeatState
 		'ayarlar'
 	];
 
-	// --- MODERN UI DEĞİŞKENLERİ ---
+	// UI
 	var scanline:FlxBackdrop;
 	var vignette:FlxSprite;
 	var sideBar:FlxSprite;
@@ -187,14 +187,14 @@ class MainMenuState extends MusicBeatState
 	];
 	
 	var newsItems:Array<String> = [
-		"🎉 Yeni güncelleme yayınlandı! Yeni özellikler eklendi. Güncelleme Kayıtlarından Bakın!",
-		" Psych Engine Türkiye Çok İyiii :D",
-		"🏆 Haftalık turnuva başladı! Katılmayı unutmayın.",
-		"💡 Discord Sunucumuza Katılmayı Unutmayın",
-		"🔥 Bide Şu Kodları Yaparken Ellerim Yanmasa!"
+		"Yeni güncelleme yayınlandı! Yeni özellikler eklendi. Güncelleme Kayıtlarından Bakın!",
+		"Psych Engine Türkiye Çok İyiii :D",
+		"Haftalık turnuva başladı! Katılmayı unutmayın.",
+		"Discord Sunucumuza Katılmayı Unutmayın",
+		"Bide Şu Kodları Yaparken Ellerim Yanmasa!"
 	];
 
-	// Sabit oyuncu adı
+	// Oyuncu Adı
 	static inline var PLAYER_NAME:String = "Oyuncu";
 
 	override function create()
@@ -209,7 +209,7 @@ class MainMenuState extends MusicBeatState
 
 		persistentUpdate = persistentDraw = true;
 
-		// --- ARKA PLAN KATMANLARI ---
+		// BG
 		bgLayer1 = new FlxSprite().makeGraphic(Std.int(FlxG.width * 1.5), Std.int(FlxG.height * 1.5), 0xFF05050a);
 		bgLayer1.screenCenter();
 		add(bgLayer1);
@@ -242,7 +242,7 @@ class MainMenuState extends MusicBeatState
 		createParticles();
 		createFloatingOrbs();
 
-		// --- MODERN ÜST PANEL (GLASSMORFİZM) ---
+		// ÜST PANEL
 		topBarGlow = new FlxSprite(0, 0).makeGraphic(FlxG.width, 85, currentTheme);
 		topBarGlow.alpha = 0.15;
 		add(topBarGlow);
@@ -276,7 +276,7 @@ class MainMenuState extends MusicBeatState
 		add(greetingText);
 		updateTimeAndGreeting();
 
-		// --- ANA MENÜ KARTLARI (MODERN DİZİLİM) ---
+		// MENU KARTLARI
 		menuCards = new FlxTypedGroup<FlxSpriteGroup>();
 		add(menuCards);
 
@@ -325,7 +325,7 @@ class MainMenuState extends MusicBeatState
 			menuCards.add(card);
 		}
 
-		// --- SAĞ PANEL (BİLGİ) ---
+		// SAĞ PANEL-
 		var descBG = new FlxSprite(FlxG.width - 420, 100).makeGraphic(400, 150, 0xAA000000);
 		add(descBG);
 		
@@ -340,7 +340,7 @@ class MainMenuState extends MusicBeatState
 		descriptionText.setFormat(Paths.font("vcr.ttf"), 18, 0xFFDDDDDD, LEFT);
 		add(descriptionText);
 
-		// --- PROFİL WIDGET ---
+		// PROFIL KART
 		profilePanelGlow = new FlxSprite(28, 108).makeGraphic(244, 154, 0xFF10B981);
 		profilePanelGlow.alpha = 0.1;
 		add(profilePanelGlow);
@@ -380,7 +380,7 @@ class MainMenuState extends MusicBeatState
 		profileXPText.setFormat(Paths.font("vcr.ttf"), 12, 0xFF888888, CENTER);
 		add(profileXPText);
 
-		// --- İSTATİSTİK WIDGET ---
+		// İSTATİSLİK PANEL
 		statsPanelGlow = new FlxSprite(28, 278).makeGraphic(244, 164, 0xFFF59E0B);
 		statsPanelGlow.alpha = 0.1;
 		add(statsPanelGlow);
@@ -413,7 +413,7 @@ class MainMenuState extends MusicBeatState
 		
 		loadStats();
 
-		// --- SON OYNANAN WIDGET ---
+		// SON OYNANAN PANEL
 		lastPlayedPanel = new FlxSprite(30, 460).makeGraphic(240, 120, 0xCC000000);
 		add(lastPlayedPanel);
 		
@@ -445,7 +445,7 @@ class MainMenuState extends MusicBeatState
 		
 		loadLastPlayed();
 
-		// --- HABERLER VE ALT BAR ---
+		// ALT PANEL
 		newsPanel = new FlxSprite(0, FlxG.height - 110).makeGraphic(FlxG.width, 40, 0x66000000);
 		add(newsPanel);
 		
