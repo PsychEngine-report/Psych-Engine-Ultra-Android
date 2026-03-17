@@ -105,7 +105,7 @@ jobs:
       - name: Download VLCKit (iOS)
         if: inputs.name == 'iOS' && steps.cache-vlckit.outputs.cache-hit != 'true'
         run: |
-          brew install --quiet libvlc
+          brew install --quiet liblc3
           mkdir -p ~/vlc-ios
           cd ~/vlc-ios
           # MobileVLCKit indir
@@ -124,13 +124,11 @@ jobs:
           haxelib run lime config VLC_IOS_FRAMEWORK $HOME/vlc-ios || true
 
       # ── libVLC: Android ─────────────────────────────────────────
-      # hxvlc Android için libVLC .so dosyalarını NDK üzerinden alır,
-      # brew'e gerek yok — hxvlc kendi içinde bundle ediyor
       - name: Verify hxvlc Android Support
         if: inputs.name == 'Android'
         run: |
-          echo "hxvlc Android: NDK üzerinden native build yapılacak"
-          haxelib list | grep hxvlc || echo "hxvlc henüz kurulmadı, setup'ta kurulacak"
+          echo "hxvlc Android: NDK üzerinden native yapılacak"
+          haxelib list | grep hxvlc || echo "hxvlc henüz kurulmadı, buildde kurulacak"
 
       # ── Haxelib kurulum ─────────────────────────────────────────
       - name: Install Libraries
