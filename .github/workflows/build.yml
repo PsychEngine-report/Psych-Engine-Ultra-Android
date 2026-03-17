@@ -92,16 +92,6 @@ jobs:
         if: contains(inputs.name, 'Linux')
         run: sudo apt install libvlc-dev libvlccore-dev
 
-      # ── libVLC: iOS — VLCKit xcframework ───────────────────────
-      # hxvlc iOS derlemesi için VLCKit framework gerekli
-      - name: Cache VLCKit (iOS)
-        if: inputs.name == 'iOS'
-        id: cache-vlckit
-        uses: actions/cache@v4
-        with:
-          path: ~/vlc-ios
-          key: vlckit-3.6.0
-
       - name: Download VLCKit (iOS)
         if: inputs.name == 'iOS' && steps.cache-vlckit.outputs.cache-hit != 'true'
         run: |
