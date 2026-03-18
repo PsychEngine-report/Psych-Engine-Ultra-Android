@@ -96,7 +96,7 @@ class MainMenuState extends MusicBeatState
 	var profileRank:FlxText;
 	var profileRankIcon:FlxText;
 	
-	// İstatislik Sistemi Değişkenleri
+	// İstatistik Sistemi Değişkenleri
 	var statsPanel:FlxSprite;
 	var statsPanelGlow:FlxSprite; 
 	var statsTotalScore:FlxText;
@@ -194,7 +194,6 @@ class MainMenuState extends MusicBeatState
 		"Bide Şu Kodları Yaparken Ellerim Yanmasa!"
 	];
 
-	// Oyuncu Adı
 	static inline var PLAYER_NAME:String = "Oyuncu";
 
 	override function create()
@@ -209,14 +208,19 @@ class MainMenuState extends MusicBeatState
 
 		persistentUpdate = persistentDraw = true;
 
-		// BG
+		// ═══════════════════════════════════════
+		// ARKA PLAN
+		// ═══════════════════════════════════════
+
 		bgLayer1 = new FlxSprite().makeGraphic(Std.int(FlxG.width * 1.5), Std.int(FlxG.height * 1.5), 0xFF05050a);
 		bgLayer1.screenCenter();
 		add(bgLayer1);
 		
+		// Grid — oluştur, sonra visibility set et, sonra add
 		gridBG = new FlxBackdrop(FlxGridOverlay.createGrid(60, 60, 120, 120, true, 0x08FFFFFF, 0x0));
 		gridBG.velocity.set(15, 15);
 		gridBG.alpha = 0.2;
+		gridBG.visible = ClientPrefs.data.showGridBG;
 		add(gridBG);
 		
 		bgLayer2 = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
@@ -228,9 +232,11 @@ class MainMenuState extends MusicBeatState
 		bgLayer2.color = currentTheme;
 		add(bgLayer2);
 
+		// Scanline — oluştur, visibility set et, add
 		scanline = new FlxBackdrop(null, Y, 0, 2);
 		scanline.makeGraphic(FlxG.width, 4, 0x11FFFFFF);
 		scanline.velocity.y = 40;
+		scanline.visible = ClientPrefs.data.showScanlines;
 		add(scanline);
 		
 		vignette = new FlxSprite().loadGraphic(Paths.image('vignette'));
@@ -239,10 +245,14 @@ class MainMenuState extends MusicBeatState
 		vignette.alpha = 0.6;
 		add(vignette);
 
+		// Parçacıklar & küreler (fonksiyon içinde zaten showParticles/showFloatingOrbs kontrolü var)
 		createParticles();
 		createFloatingOrbs();
 
-		// ÜST PANEL
+		// ═══════════════════════════════════════
+		// ÜST BAR
+		// ═══════════════════════════════════════
+
 		topBarGlow = new FlxSprite(0, 0).makeGraphic(FlxG.width, 85, currentTheme);
 		topBarGlow.alpha = 0.15;
 		add(topBarGlow);
@@ -263,20 +273,29 @@ class MainMenuState extends MusicBeatState
 		systemStatusText.setFormat(Paths.font("vcr.ttf"), 14, currentTheme, LEFT);
 		add(systemStatusText);
 		
+		// Saat & tarih — oluştur, visibility set et, add
 		clockText = new FlxText(FlxG.width - 200, 18, 180, "", 28);
 		clockText.setFormat(Paths.font("vcr.ttf"), 28, FlxColor.WHITE, RIGHT);
+		clockText.visible = ClientPrefs.data.showClock;
 		add(clockText);
 		
 		dateText = new FlxText(FlxG.width - 200, 48, 180, "", 14);
 		dateText.setFormat(Paths.font("vcr.ttf"), 14, 0xFFBBBBBB, RIGHT);
+		dateText.visible = ClientPrefs.data.showClock;
 		add(dateText);
 		
+		// Selamlama — oluştur, visibility set et, add
 		greetingText = new FlxText(FlxG.width - 450, 30, 240, "", 18);
 		greetingText.setFormat(Paths.font("vcr.ttf"), 18, currentTheme, RIGHT);
+		greetingText.visible = ClientPrefs.data.showGreeting;
 		add(greetingText);
+		
 		updateTimeAndGreeting();
 
-		// MENU KARTLARI
+		// ═══════════════════════════════════════
+		// MENÜ KARTLARI
+		// ═══════════════════════════════════════
+
 		menuCards = new FlxTypedGroup<FlxSpriteGroup>();
 		add(menuCards);
 
@@ -325,7 +344,10 @@ class MainMenuState extends MusicBeatState
 			menuCards.add(card);
 		}
 
-		// SAĞ PANEL-
+		// ═══════════════════════════════════════
+		// SAĞ AÇIKLAMA PANELİ
+		// ═══════════════════════════════════════
+
 		var descBG = new FlxSprite(FlxG.width - 420, 100).makeGraphic(400, 150, 0xAA000000);
 		add(descBG);
 		
@@ -340,7 +362,11 @@ class MainMenuState extends MusicBeatState
 		descriptionText.setFormat(Paths.font("vcr.ttf"), 18, 0xFFDDDDDD, LEFT);
 		add(descriptionText);
 
-		// PROFIL KART
+		// ═══════════════════════════════════════
+		// PROFİL PANELİ
+		// Tüm elemanları oluştur → add et → sonunda toplu visibility
+		// ═══════════════════════════════════════
+
 		profilePanelGlow = new FlxSprite(28, 108).makeGraphic(244, 154, 0xFF10B981);
 		profilePanelGlow.alpha = 0.1;
 		add(profilePanelGlow);
@@ -380,7 +406,24 @@ class MainMenuState extends MusicBeatState
 		profileXPText.setFormat(Paths.font("vcr.ttf"), 12, 0xFF888888, CENTER);
 		add(profileXPText);
 
-		// İSTATİSLİK PANEL
+		// Profil paneli — tüm elemanlar add edildikten sonra toplu visibility
+		var _showProfile:Bool = ClientPrefs.data.showProfilePanel;
+		profilePanelGlow.visible = _showProfile;
+		profilePanel.visible     = _showProfile;
+		profBorder.visible       = _showProfile;
+		profileIcon.visible      = _showProfile;
+		profileName.visible      = _showProfile;
+		profileRankIcon.visible  = _showProfile;
+		profileRank.visible      = _showProfile;
+		profileLevel.visible     = _showProfile;
+		profileXPBar.visible     = _showProfile;
+		profileXPText.visible    = _showProfile;
+
+		// ═══════════════════════════════════════
+		// İSTATİSTİK PANELİ
+		// Tüm elemanları oluştur → add et → sonunda toplu visibility
+		// ═══════════════════════════════════════
+
 		statsPanelGlow = new FlxSprite(28, 278).makeGraphic(244, 164, 0xFFF59E0B);
 		statsPanelGlow.alpha = 0.1;
 		add(statsPanelGlow);
@@ -410,10 +453,25 @@ class MainMenuState extends MusicBeatState
 		statsPlayTime = new FlxText(50, 420, 200, "TIME: 0", 14);
 		statsPlayTime.setFormat(Paths.font("vcr.ttf"), 14, 0xFF888888, LEFT);
 		add(statsPlayTime);
-		
+
+		// İstatistik paneli — tüm elemanlar add edildikten sonra toplu visibility
+		var _showStats:Bool = ClientPrefs.data.showStatsPanel;
+		statsPanelGlow.visible   = _showStats;
+		statsPanel.visible       = _showStats;
+		statsBorder.visible      = _showStats;
+		statsTotalScore.visible  = _showStats;
+		statsSongsPlayed.visible = _showStats;
+		statsAccuracy.visible    = _showStats;
+		statsPerfects.visible    = _showStats;
+		statsPlayTime.visible    = _showStats;
+
 		loadStats();
 
-		// SON OYNANAN PANEL
+		// ═══════════════════════════════════════
+		// SON OYNANAN PANELİ
+		// Tüm elemanları oluştur → add et → sonunda toplu visibility
+		// ═══════════════════════════════════════
+
 		lastPlayedPanel = new FlxSprite(30, 460).makeGraphic(240, 120, 0xCC000000);
 		add(lastPlayedPanel);
 		
@@ -442,10 +500,24 @@ class MainMenuState extends MusicBeatState
 		quickPlayGlow = new FlxSprite(43, 533).makeGraphic(214, 39, 0xFF8B5CF6);
 		quickPlayGlow.alpha = 0;
 		add(quickPlayGlow);
-		
+
+		// Son oynanan paneli — tüm elemanlar add edildikten sonra toplu visibility
+		var _showLast:Bool = ClientPrefs.data.showLastPlayedPanel;
+		lastPlayedPanel.visible      = _showLast;
+		lastBorder.visible           = _showLast;
+		lastPlayedSong.visible       = _showLast;
+		lastPlayedDifficulty.visible = _showLast;
+		lastPlayedScore.visible      = _showLast;
+		quickPlayButton.visible      = _showLast;
+		quickPlayText.visible        = _showLast;
+		quickPlayGlow.visible        = _showLast;
+
 		loadLastPlayed();
 
-		// ALT PANEL
+		// ═══════════════════════════════════════
+		// ALT BAR
+		// ═══════════════════════════════════════
+
 		newsPanel = new FlxSprite(0, FlxG.height - 110).makeGraphic(FlxG.width, 40, 0x66000000);
 		add(newsPanel);
 		
@@ -456,6 +528,12 @@ class MainMenuState extends MusicBeatState
 		newsText = new FlxText(130, FlxG.height - 100, FlxG.width - 150, newsItems[0], 16);
 		newsText.setFormat(Paths.font("vcr.ttf"), 16, 0xFFEEEEEE, LEFT);
 		add(newsText);
+
+		// Haber şeridi — tüm elemanlar add edildikten sonra toplu visibility
+		var _showNews:Bool = ClientPrefs.data.showNewsBar;
+		newsPanel.visible = _showNews;
+		newsTitle.visible = _showNews;
+		newsText.visible  = _showNews;
 
 		bottomBarGlow = new FlxSprite(0, FlxG.height - 70).makeGraphic(FlxG.width, 75, currentTheme);
 		bottomBarGlow.alpha = 0.1;
@@ -470,8 +548,12 @@ class MainMenuState extends MusicBeatState
 		versionText = new FlxText(FlxG.width - 300, FlxG.height - 45, 280, "PSYCH XQ V3 | " + psychEngineVersion, 16);
 		versionText.setFormat(Paths.font("vcr.ttf"), 16, 0xFF888888, RIGHT);
 		add(versionText);
+		versionText.visible = ClientPrefs.data.showVersionText;
 
-		// KAMERA AYARLARI
+		// ═══════════════════════════════════════
+		// KAMERA
+		// ═══════════════════════════════════════
+
 		camFollow = new FlxObject(0, 0, 1, 1);
 		camFollowPos = new FlxObject(0, 0, 1, 1);
 		add(camFollow);
@@ -586,6 +668,7 @@ class MainMenuState extends MusicBeatState
 	
 	function createParticles()
 	{
+		if (!ClientPrefs.data.showParticles) return;
 		for(i in 0...40)
 		{
 			var p = new FlxSprite(FlxG.random.float(0, FlxG.width), FlxG.random.float(0, FlxG.height));
@@ -601,6 +684,7 @@ class MainMenuState extends MusicBeatState
 	
 	function createFloatingOrbs()
 	{
+		if (!ClientPrefs.data.showFloatingOrbs) return;
 		for(i in 0...8)
 		{
 			var orb = new FlxSprite(FlxG.random.float(400, FlxG.width - 50), FlxG.random.float(100, FlxG.height - 100));
@@ -915,7 +999,7 @@ class MainMenuState extends MusicBeatState
 		}
 
 		updateCardPositions(elapsed, lerpVal);
-		updateParallax(elapsed, lerpVal);
+		if (ClientPrefs.data.showParallax) updateParallax(elapsed, lerpVal);
 		updateFloatingOrbs(elapsed);
 		
 		if(profilePanelGlow != null) profilePanelGlow.alpha = 0.1 + Math.sin(ambientPulse * 2) * 0.05;

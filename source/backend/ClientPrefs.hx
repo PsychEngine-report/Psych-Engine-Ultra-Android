@@ -29,6 +29,21 @@ import states.TitleState;
 	public var petloadingscreenimage:String = 'ONLINE';
 	public var disableIntroVideo:Bool = false;
 	
+	
+	// MainMenu (V3)
+	public var showProfilePanel:Bool = true;
+	public var showStatsPanel:Bool = true;
+	public var showParticles:Bool = true;
+	public var showGridBG:Bool = true;
+	public var showScanlines:Bool = true;
+	public var showClock:Bool = true;
+	public var showGreeting:Bool = true;
+	public var showNewsBar:Bool = true;
+	public var showVersionText:Bool = true;
+	public var showParallax:Bool = true;
+	public var showLastPlayedPanel:Bool = true;
+	public var showFloatingOrbs:Bool = true;
+	
 	public var downScroll:Bool = false;
 	public var middleScroll:Bool = false;
 	public var opponentStrums:Bool = true;
@@ -97,7 +112,7 @@ import states.TitleState;
 	public var guitarHeroSustains:Bool = true;
 	public var discordRPC:Bool = true;
 	public var loadingScreen:Bool = true;
-	public var language:String = 'en-US';
+	public var language:String = 'english';
 	
 		public var importSaveFile:String = '';
 }
@@ -289,6 +304,7 @@ class ClientPrefs {
 					if(mobileBinds.exists(control)) mobileBinds.set(control, keys);
 			}
 			reloadVolumeKeys();
+			Language.reloadPhrases();
 		}
 	}
 

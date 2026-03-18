@@ -5,21 +5,13 @@ import languages.English;
 import languages.Turkish;
 import languages.Spanish;
 
-/**
- * Language sistemi — Statik Haxe Map tabanlı.
- * 
- * Yeni dil eklemek için:
- *   1. source/languages/YeniDil.hx oluştur (ILanguage implement et)
- *   2. Aşağıdaki registerLanguages() fonksiyonuna ekle
- *   3. assets/shared/images/ultra/images/language/yenidil.png ekle
- */
 class Language
 {
     public static var defaultLangName:String = 'English (US)';
     public static var defaultLangKey:String  = 'english';
 
-    /** Kayıtlı tüm diller: key (lowercase, örn: "turkish") => ILanguage instance */
     public static var registeredLanguages:Map<String, ILanguage> = [];
+    private static var _languagesRegistered:Bool = false; // ← DÜZELTME 1: tekrar clear() engeli
 
     #if TRANSLATIONS_ALLOWED
     private static var currentLang:ILanguage = null;
@@ -27,34 +19,37 @@ class Language
     private static var imageOverrides:Map<String, String> = [];
     #end
 
-    /**
-     * Tüm dilleri kaydet. Yeni dil = buraya bir satır ekle.
-     */
     public static function registerLanguages():Void
     {
-        registeredLanguages.clear();
+        if (_languagesRegistered) return; // ← zaten kayıtlıysa tekrar yapma
+        _languagesRegistered = true;
+
         registeredLanguages.set('english',  new English());
         registeredLanguages.set('turkish',  new Turkish());
         registeredLanguages.set('spanish',  new Spanish());
-        // registeredLanguages.set('french',   new French());
-        // registeredLanguages.set('german',   new German());
-        // registeredLanguages.set('portuguese', new Portuguese());
-        // registeredLanguages.set('russian',  new Russian());
-        // registeredLanguages.set('japanese', new Japanese());
-        // registeredLanguages.set('korean',   new Korean());
-        // registeredLanguages.set('chinese',  new Chinese());
     }
 
-    /**
-     * Mevcut dili yükle. ClientPrefs.data.language key'ini kullanır.
-     */
     public static function reloadPhrases():Void
     {
-        if (registeredLanguages.keys().hasNext() == false)
+        if (!_languagesRegistered)
             registerLanguages();
 
         #if TRANSLATIONS_ALLOWED
-        var langKey:String = ClientPrefs.data.language.toLowerCase().trim();
+        // ← DÜZELTME 2: null/boş language key güvenliği
+        var langKey:String = (ClientPrefs.data.language != null && ClientPrefs.data.language.length > 0)
+            ? ClientPrefs.data.language.toLowerCase().trim()
+            : defaultLangKey;
+		final aliases:Map<String, String> = [
+			'en-us'    => 'english',
+			'en'       => 'english',
+			'tr'       => 'turkish',
+			'tr-tr'    => 'turkish',
+			'es'       => 'spanish',
+			'es-es'    => 'spanish',
+		];
+		if (aliases.exists(langKey))
+			langKey = aliases.get(langKey);
+
         currentLang = registeredLanguages.get(langKey);
 
         if (currentLang == null)
@@ -64,31 +59,25 @@ class Language
             currentLang = registeredLanguages.get(defaultLangKey);
         }
 
-        // Phrase ve image override map'lerini yükle
-        phrases       = (currentLang != null) ? currentLang.phrases       : [];
+        phrases        = (currentLang != null) ? currentLang.phrases        : [];
         imageOverrides = (currentLang != null) ? currentLang.imageOverrides : [];
 
-        // Alphabet path
         var alphaPath:String = (currentLang != null && currentLang.alphabetPath != null)
             ? currentLang.alphabetPath
             : 'alphabet';
         AlphaCharacter.loadAlphabetData(alphaPath);
 
+        trace('[Language] Yüklendi: ' + langKey + ' | Phrase sayısı: ' + Lambda.count(phrases)); // ← DEBUG
         #else
         AlphaCharacter.loadAlphabetData();
         #end
     }
 
-    /**
-     * Çeviri getir.
-     * @param key           Çeviri anahtarı (ör: "play_on_a_friday_night")
-     * @param defaultPhrase Bulunamazsa kullanılacak string
-     * @param values        {1}, {2} gibi placeholder değerleri
-     */
     inline public static function getPhrase(key:String, ?defaultPhrase:String, values:Array<Dynamic> = null):String
     {
         #if TRANSLATIONS_ALLOWED
-        var str:String = phrases.get(formatKey(key));
+        // ← DÜZELTME 3: phrases null kontrolü
+        var str:String = (phrases != null) ? phrases.get(formatKey(key)) : null;
         if (str == null) str = defaultPhrase;
         #else
         var str:String = defaultPhrase;
@@ -98,39 +87,33 @@ class Language
 
         if (values != null)
             for (num => value in values)
-                str = str.replace('{${num + 1}}', value);
+                str = str.replace('{${num + 1}}', Std.string(value)); // ← DÜZELTME 4: Std.string() cast
 
         return str;
     }
 
-    /**
-     * Image path çevirisi. 
-     * Örnek: "images/bad" → "images/languages/images/turkey/kötü"
-     * Bulunamazsa orijinal path döner.
-     */
     public static function getFileTranslation(key:String):String
     {
         #if TRANSLATIONS_ALLOWED
+        if (imageOverrides == null) return key; // ← DÜZELTME 5: null guard
+
         var trimmed:String = key.trim().toLowerCase();
 
-		var translated:String = imageOverrides.get(trimmed);
-		if (translated != null) return translated;
+        var translated:String = imageOverrides.get(trimmed);
+        if (translated != null) return translated;
 
-		if (trimmed.startsWith('images/'))
-		{
-			translated = imageOverrides.get(trimmed.substr('images/'.length));
-			if (translated != null) return 'images/' + translated;
-		}
+        if (trimmed.startsWith('images/'))
+        {
+            translated = imageOverrides.get(trimmed.substr('images/'.length));
+            if (translated != null) return 'images/' + translated;
+        }
         #end
         return key;
     }
 
-    /**
-     * Dil adını döner (görünen ad).
-     */
     public static function getLangDisplayName(key:String):String
     {
-        if (registeredLanguages.keys().hasNext() == false)
+        if (!_languagesRegistered)
             registerLanguages();
 
         var lang:ILanguage = registeredLanguages.get(key.toLowerCase());
@@ -138,12 +121,11 @@ class Language
         return key;
     }
 
-    /**
-     * Aktif dil key'ini döner.
-     */
     public static function getCurrentLangKey():String
     {
-        return ClientPrefs.data.language.toLowerCase().trim();
+        return (ClientPrefs.data.language != null)
+            ? ClientPrefs.data.language.toLowerCase().trim()
+            : defaultLangKey;
     }
 
     #if TRANSLATIONS_ALLOWED

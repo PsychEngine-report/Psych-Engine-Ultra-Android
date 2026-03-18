@@ -21,7 +21,8 @@ class OptionsState extends MusicBeatState
 		'Grafikler',
 		'Görünüş & Arayüz',
 		'Oynanış',
-		'P.E.U Ayarları'
+		'P.E.U Ayarları',
+		'Menü Ayarları'
 		#if TRANSLATIONS_ALLOWED , 'Dil' #end
 		,'Mobil Ayarlar'
 	];
@@ -186,6 +187,8 @@ class OptionsState extends MusicBeatState
 					openSubState(new mobile.options.MobileOptionsSubState());
 				case 'P.E.U Ayarları':
 					openSubState(new options.PEUSettingsState());
+				case 'Menü Ayarları':
+					openSubState(new options.MainMenuSettingsState());
 			}
 		});
 	}
