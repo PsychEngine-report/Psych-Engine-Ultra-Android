@@ -3,7 +3,7 @@
 Psych Engine Ultra is a highly customizable and advanced fork of Psych Engine, originally used on Mind Games Mod. Ultra takes everything Psych Engine offers and pushes it further — delivering a more accessible, polished, and feature-rich experience for both players and modders.
 
 # What's New In Ultra?
-* Multi-language support — Currently supports Turkish. ehmm.. English, French, German and more languages are on the way! (Working on Language System)
+* Multi-language support — Currently supports English, Turkish and Spanish. French, German and more languages are on the way! (Working on Language System)
 * Enhanced Mod Support — Improved mod loading, organizing, and compatibility.
 * Custom UI & Menus — Completely reworked menus for a cleaner and more modern look and feel.
 * Highly Customizable — Even more options to tailor your experience
@@ -18,11 +18,17 @@ Psych Engine Ultra is a highly customizable and advanced fork of Psych Engine, o
 ## Main Menu (V3 Style)
 ![Main Menu](docs/img/MainMenu.png)
 
+## Freeplay (V3 Style)
+![Freeplay](docs/img/Freeplay.png)
+
 ## Options (V3 Style)
 ![Options](docs/img/Options.png)
 
-## Freeplay (V3 Style)
-![Freeplay](docs/img/Freeplay.png)
+## Achievements (V3 Style)
+![Achievements](docs/img/Achievements.png)
+
+## Credits (V3 Style)
+![Credits](docs/img/Credits.png)
 
 ## Credits:
 * SametGkTe - Owner Of Psych Engine Ultra and Coder
