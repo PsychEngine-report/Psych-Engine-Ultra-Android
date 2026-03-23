@@ -78,7 +78,7 @@ jobs:
           path: /home/runner/artifacts/ios
 
       - name: Zip iOS Build For Release
-        run: zip -r /home/runner/${{ env.PROJECT_NAME }}-iOS.zip /home/runner/artifacts/ios/
+        run: zip -r /home/runner/${{ env.PROJECT_NAME }}-iOS.zip /home/runner/${{ env.PROJECT_NAME }}-iOS.zip
 
       - name: Publish Release
         uses: softprops/action-gh-release@v2
